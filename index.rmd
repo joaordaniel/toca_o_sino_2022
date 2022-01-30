@@ -1,0 +1,128 @@
+---
+title: "Legislativas 2022: Freguesias Bell - RealTime Update"
+output: html_document
+---
+
+```{python include = FALSE}
+
+def getLinkAno(ano):
+  if(ano=='2019'):
+    link_2019 = 'https://www.eleicoes.mai.gov.pt/legislativas2019/static-data/'
+    return link_2019
+  else:
+    link_2022 = 'https://www.legislativas2022.mai.gov.pt/frontend/data/'
+    return link_2022
+
+def getResultsLink(ano):
+  if(ano=='2019'):
+    link_2019 = 'TERRITORY-RESULTS-'
+    return link_2019
+  else:
+    link_2022 = 'TerritoryResults?electionId=AR'
+    return link_2022
+
+def getChildrenLink(ano):
+  if(ano=='2019'):
+    link_2019 = 'TERRITORY-CHILDREN-'
+    return link_2019
+  else:
+    link_2022 = 'TerritoryChildren?electionId=AR'
+    return link_2022
+
+import pandas as pd
+
+def buildLegislativasURL(territorio,ano):
+  #url_eleicao_territorio = 'https://www.legislativas2022.mai.gov.pt/assets/static/territory-results/TERRITORY-RESULTS-' + territorio + '-AR.json'
+  url_eleicao_territorio = getLinkAno(ano) + getResultsLink(ano) + '&territoryKey=' + territorio
+  return url_eleicao_territorio
+
+def buildLegislativasURLForChildren(territorio,ano):
+  #url_eleicao_territorio = 'https://www.legislativas2022.mai.gov.pt/static-data/territory-results/TERRITORY-RESULTS-' + territorio + '-AR.json'
+  url_eleicao_territorio = getLinkAno(ano) + getChildrenLink(ano) + '&territoryKey=' + territorio 
+  return url_eleicao_territorio
+
+def getJsonFromURL(url):
+  try:
+    import urllib
+    from urllib.error import HTTPError
+    import json
+    from urllib import request
+    from bs4 import BeautifulSoup
+    html = request.urlopen(url).read()
+    print('Importing url: '+ url)
+    soup = BeautifulSoup(html,'html.parser')
+    site_json=json.loads(str(soup))
+    return site_json,1
+  except HTTPError:
+    site_json = ''
+    print('HTTPError')
+    return site_json,0
+
+def getPandasFromLocal(local,ano):
+  import pandas as pd
+  try:
+    test_json, result = getJsonFromURL(buildLegislativasURL(local,ano))
+    if (result >=1):
+      dados = pd.DataFrame(test_json['currentResults']['resultsParty'])
+      dados['territoryKey'] = test_json['territoryKey']
+      dados['territoryName'] = test_json['territoryName']
+      print('Obtido local: ' + local)
+    else:
+      dados = pd.DataFrame()
+      print('Erro a recolher o local: ' + local)
+    return dados
+  except:
+    print('Dados ainda não disponíveis: ' + local + ' para ano:' + ano)
+    return pd.DataFrame()
+
+ListaBell = ['LOCAL-111321','LOCAL-111123','LOCAL-111326','LOCAL-110919','LOCAL-110921','LOCAL-111127', 'LOCAL-131602', 'LOCAL-131811', 'LOCAL-130415', 'LOCAL-130736', 'LOCAL-030813', 'LOCAL-030351', 'LOCAL-150303','LOCAL-151210','LOCAL-010801', 'LOCAL-010706', 'LOCAL-100121', 'LOCAL-141202', 'LOCAL-080812', 'LOCAL-060334', 'LOCAL-181623']
+
+df_gapNacional = pd.read_csv("./gapsNacional.csv", encoding='utf-16')
+df_gapNacional = df_gapNacional[['Partido','gap_nacional']]
+
+df_gaps = pd.read_csv("./2019_bell_gaps.csv",encoding='utf-16')
+
+dadosBell_2022 = pd.DataFrame()
+df_final_bell_2022 = pd.DataFrame()
+for i in ListaBell:
+    dadosBell_2022 = pd.concat([dadosBell_2022,getPandasFromLocal(i,'2022')]) #change para 2022
+
+if(dadosBell_2022.size >0):
+  df_bell_resultados_2022 = pd.merge(dadosBell_2022, df_gaps, on=['acronym','territoryKey','territoryName'], how='left')
+  df_bell_resultados_2022 = df_bell_resultados_2022[['acronym','percentage','territoryKey','territoryName','gapToResult']]
+  df_bell_resultados_2022['2022_Percentagem_Corrigida'] = df_bell_resultados_2022['percentage'] + df_bell_resultados_2022['gapToResult']
+  df_bell_resultados_2022
+
+  series_agg_2022 = df_bell_resultados_2022.groupby(['acronym'])['percentage'].mean()
+  df_final_bell_2022 = pd.DataFrame(series_agg_2022)
+  df_final_bell_2022 = df_final_bell_2022.sort_values(by=['percentage'],ascending=False)
+  df_final_bell_2022['percentage'] = df_final_bell_2022['percentage'].round(2)
+  df_final_bell_2022.reset_index(level=0, inplace=True)
+  df_final_bell_2022 = df_final_bell_2022.rename(columns = {"acronym":"Partido", "percentage":"% Votação Bell"})
+  df_final_bell_2022 = pd.merge(df_final_bell_2022,df_gapNacional,on='Partido', how='left')
+  df_final_bell_2022['% Votação Corrigida c/gap nacional'] = df_final_bell_2022['% Votação Bell'] + df_final_bell_2022['gap_nacional']
+  df_final_bell_2022['% Votação Corrigida c/gap nacional'] = df_final_bell_2022['% Votação Corrigida c/gap nacional'].round(2)
+else:
+  df_final_bell_2022 = pd.DataFrame()
+
+#se for necessário, adicionar print(df_final_bell_2022) para ver no terminal a tabela
+df_final_bell_2022
+# escolher só top9
+top9 = df_final_bell_2022.head(9)
+
+if(dadosBell_2022.size >0):
+  import seaborn as sns
+  sns.catplot(x="Partido", y="% Votação Bell", kind="bar", data=top9, height=6.5, aspect=3)
+
+
+```
+
+``` {r echo = FALSE}
+library(reticulate)
+library(knitr)
+
+kable(py$top9)
+
+```
+
+Atualização: `r Sys.time()`
