@@ -131,9 +131,9 @@ Atualização: `r Sys.time()`
 
 [João R. Daniel](https://twitter.com/j_r_daniel)
 
-[Intracampos](https://twitter.com/intracampos)
+[Tiago Campos: Intracampos](https://twitter.com/intracampos)
 
-[Parágrafo](https://twitter.com/jm_jonet)
+[João Jonet: Parágrafo](https://twitter.com/jm_jonet)
 
 <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
 <script>
