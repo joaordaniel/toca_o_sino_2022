@@ -134,3 +134,13 @@ Atualização: `r Sys.time()`
 [Intracampos](https://twitter.com/intracampos)
 
 [Parágrafo](https://twitter.com/jm_jonet)
+
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('jrdaniel38137', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support Us',
+    'floating-chat.donateButton.background-color': '#00b9fe',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script>
