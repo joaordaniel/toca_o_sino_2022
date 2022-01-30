@@ -126,3 +126,11 @@ kable(py$top9)
 ```
 
 Atualização: `r Sys.time()`
+
+[Tiago P. Santos](https://twitter.com/tpalasantos)
+
+[João R. Daniel](https://twitter.com/j_r_daniel)
+
+[Intracampos](https://twitter.com/intracampos)
+
+[Parágrafo](https://twitter.com/jm_jonet)
